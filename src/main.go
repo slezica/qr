@@ -51,6 +51,7 @@ func parseArgs() (*Config, error) {
 	} else if *renderArg == "sixel" {
 		config.white = "255;255;255"
 		config.black = "0;0;0"
+    config.render = renderSixel
 
 	} else {
 		return nil, fmt.Errorf("invalid renderer name") // TODO
