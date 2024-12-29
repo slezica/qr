@@ -32,21 +32,24 @@ This has the benefit of being more compact and easier to scan.
 
 ### Flags
 
-* `-render <"text"|"sixel">`: set the rendering mode, as shown above.
-        ```
-        qr -render text  # print characters, the default
-        qr -render sixel # print an image using sixel
-        ```
+`-render <"text"|"sixel">`: set the rendering mode, as shown above.
 
-* `-white <char or color>`: set the white (background) character/color for text/sixel rendering.
-        ```
-        qr -white ' '           # the default for text
-        qr -white '255;255;255' # the default for sixel
-        ```
+```
+qr -render text  # print characters, the default
+qr -render sixel # print an image using sixel
+```
 
-* `-black <char or color>`: set the black (foreground) character/color for text/sixel rendering.
-        ```
-        qr -black '█'     # the default for text
-        qr -black '0;0;0' # the default for sixel
-        ```
+`-white <char|color>`: set the white (background) character/color for text/sixel rendering.
+
+```
+qr -white ' '           # the default for text
+qr -white '255;255;255' # the default for sixel
+```
+
+`-black <char|color>`: set the black (foreground) character/color for text/sixel rendering.
+
+```
+qr -black '█'     # the default for text
+qr -black '0;0;0' # the default for sixel
+```
 
