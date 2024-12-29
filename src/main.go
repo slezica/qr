@@ -12,28 +12,23 @@ import (
 
 const MAX_INPUT_BYTES = int64(8 * 1024)
 
-type Config struct {
-	black  string     // Black character or sixel RGB string (e.g. '#' or '0;0;0')
-	white  string     // White character or sixel RGB string (e.g. ' ' or '255;255;255')
-	render RenderFunc // Rendering function, either renderText or renderSixel
-}
-
-type RenderName string
-type RenderFunc = func(w io.Writer, grid Grid, black string, white string)
-
-const (
-	TEXT  RenderName = "text"
-	SIXEL RenderName = "sixel"
-)
-
-type Grid = *qrencode.BitGrid
-
-
 // -------------------------------------------------------------------------------------------------
 
-func parseArgs() (*Config, error) {
-	config := &Config{}
-	// help := flagSet.Bool("help", false, "Show help")
+type Args struct {
+	black  string     // Black character or sixel RGB string (e.g. '#' or '0;0;0')
+	white  string     // White character or sixel RGB string (e.g. ' ' or '255;255;255')
+	render RenderArg    // Rendering mode, either TEXT or SIXEL
+}
+
+type RenderArg string
+
+const (
+	TEXT  RenderArg = "text"
+	SIXEL RenderArg = "sixel"
+)
+
+func parseArgs() (*Args, error) {
+	args := &Args{}
 
 	blackArg := flag.String("black", "", "Black character/color for text/sixel renderer")
 	whiteArg := flag.String("white", "", "White character/color for text/sixel renderer")
@@ -44,34 +39,34 @@ func parseArgs() (*Config, error) {
 	// TODO validate
 
 	if *renderArg == "text" {
-		config.white = " "
-		config.black = "█"
-		config.render = renderText
+		args.black = "█"
+		args.white = " "
+    args.render = TEXT
 
 	} else if *renderArg == "sixel" {
-		config.white = "255;255;255"
-		config.black = "0;0;0"
-    config.render = renderSixel
+		args.black = "0;0;0"
+		args.white = "255;255;255"
+    args.render = SIXEL
 
 	} else {
-		return nil, fmt.Errorf("invalid renderer name") // TODO
+    return nil, fmt.Errorf("Invalid renderer name: must be 'text' or 'sixel")
 	}
 
 	if *whiteArg != "" {
-		config.white = *whiteArg
+		args.white = *whiteArg
 	}
 
 	if *blackArg != "" {
-		config.black = *blackArg
+		args.black = *blackArg
 	}
 
-	return config, nil
+	return args, nil
 }
 
 
 // -------------------------------------------------------------------------------------------------
 
-func renderText(w io.Writer, grid Grid, black string, white string) {
+func renderText(w io.Writer, grid *qrencode.BitGrid, black string, white string) {
 	width := grid.Width()
 	height := grid.Height()
 
@@ -89,7 +84,7 @@ func renderText(w io.Writer, grid Grid, black string, white string) {
 	fmt.Fprint(w, "\n")
 }
 
-func renderSixel(w io.Writer, grid Grid, black string, white string) {
+func renderSixel(w io.Writer, grid *qrencode.BitGrid, black string, white string) {
 	fmt.Fprint(w, "\n\033Pq") // start sixel mode
 
 	fmt.Fprintf(w, "#0;2;%s", black) // assign #0 to RGB string from `black`
@@ -159,7 +154,7 @@ func readLimitOrFail(r io.Reader, n int64) ([]byte, error) {
 // -------------------------------------------------------------------------------------------------
 
 func main() {
-	config, err := parseArgs()
+	args, err := parseArgs()
 	if err != nil {
     panic(err)
 	}
@@ -174,5 +169,9 @@ func main() {
 		panic(err)
 	}
 
-	config.render(os.Stdout, grid, config.black, config.white)
+  if args.render == SIXEL {
+    renderSixel(os.Stdout, grid, args.black, args.white)
+  } else {
+    renderText(os.Stdout, grid, args.black, args.white)
+  }
 }
