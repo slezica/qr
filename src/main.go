@@ -15,9 +15,9 @@ const MAX_INPUT_BYTES = int64(8 * 1024)
 // -------------------------------------------------------------------------------------------------
 
 type Args struct {
-	black  string     // Black character or sixel RGB string (e.g. '#' or '0;0;0')
-	white  string     // White character or sixel RGB string (e.g. ' ' or '255;255;255')
-	render RenderArg    // Rendering mode, either TEXT or SIXEL
+	black  string    // Black character or sixel RGB string (e.g. '#' or '0;0;0')
+	white  string    // White character or sixel RGB string (e.g. ' ' or '255;255;255')
+	render RenderArg // Rendering mode, either TEXT or SIXEL
 }
 
 type RenderArg string
@@ -41,15 +41,15 @@ func parseArgs() (*Args, error) {
 	if *renderArg == "text" {
 		args.black = "█"
 		args.white = " "
-    args.render = TEXT
+		args.render = TEXT
 
 	} else if *renderArg == "sixel" {
 		args.black = "0;0;0"
 		args.white = "255;255;255"
-    args.render = SIXEL
+		args.render = SIXEL
 
 	} else {
-    return nil, fmt.Errorf("Invalid renderer name: must be 'text' or 'sixel")
+		return nil, fmt.Errorf("Invalid renderer name: must be 'text' or 'sixel")
 	}
 
 	if *whiteArg != "" {
@@ -62,7 +62,6 @@ func parseArgs() (*Args, error) {
 
 	return args, nil
 }
-
 
 // -------------------------------------------------------------------------------------------------
 
@@ -132,36 +131,34 @@ func renderSixel(w io.Writer, grid *qrencode.BitGrid, black string, white string
 	fmt.Println()
 }
 
-
 // -------------------------------------------------------------------------------------------------
 
 func readLimitOrFail(r io.Reader, n int64) ([]byte, error) {
-  reader := &io.LimitedReader{R: r, N: n+1} // extra byte to detect excess data
+	reader := &io.LimitedReader{R: r, N: n + 1} // extra byte to detect excess data
 
 	data, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}
 
-  if reader.N > n {
-    return nil, fmt.Errorf("Input longer than the maximum of %d bytes\n", n)
-  }
+	if reader.N > n {
+		return nil, fmt.Errorf("Input longer than the maximum of %d bytes\n", n)
+	}
 
-  return data, nil
+	return data, nil
 }
-
 
 // -------------------------------------------------------------------------------------------------
 
 func main() {
 	args, err := parseArgs()
 	if err != nil {
-    panic(err)
+		panic(err)
 	}
 
-  data, err := readLimitOrFail(os.Stdin, MAX_INPUT_BYTES)
-  if err != nil {
-    panic(err)
+	data, err := readLimitOrFail(os.Stdin, MAX_INPUT_BYTES)
+	if err != nil {
+		panic(err)
 	}
 
 	grid, err := qrencode.EncodeBytes(data, qrencode.ECLevelL)
@@ -169,9 +166,9 @@ func main() {
 		panic(err)
 	}
 
-  if args.render == SIXEL {
-    renderSixel(os.Stdout, grid, args.black, args.white)
-  } else {
-    renderText(os.Stdout, grid, args.black, args.white)
-  }
+	if args.render == SIXEL {
+		renderSixel(os.Stdout, grid, args.black, args.white)
+	} else {
+		renderText(os.Stdout, grid, args.black, args.white)
+	}
 }
